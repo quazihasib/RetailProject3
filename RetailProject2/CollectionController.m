@@ -13,7 +13,7 @@
 #import "ImageCache.h"
 
 static NSString * const kCellReuseIdentifier = @"cell";
-NSMutableArray *listURLs, *listLabels ;
+NSMutableArray *listURLs, *listLabels, *listURLs1 ;
 
 @implementation CollectionController : UIViewController
 
@@ -52,13 +52,51 @@ NSArray *keys;
 //    }
 
     listURLs = [NSMutableArray array];
-    NSMutableArray *tableData,* imageUrl;
+    NSMutableArray *tableData,* imageUrl, *tableData1,*imageUrl1;
+    tableData = [[NSMutableArray alloc]init];
     imageUrl = [[NSMutableArray alloc]init];
     
+    tableData1 = [[NSMutableArray alloc]init];
+    imageUrl1 = [[NSMutableArray alloc]init];
+    listURLs1 = [[NSMutableArray alloc] init];
+    listLabels = [[NSMutableArray alloc]init];
+    
+    for(int y=0;y<[keys count]; y++)
+    {
+        [tableData1 insertObject:[json valueForKey:keys[y]] atIndex:y];
+    }
+    
+    for(int u=0;u<[keys count]; u++)
+    {
+        [imageUrl1 insertObject:[[tableData1 objectAtIndex:u] valueForKey:@"image"] atIndex:u];
+        [listLabels insertObject:[[tableData1 objectAtIndex:u] valueForKey:@"field1"] atIndex:u];
+    }
+    
+    
+    //NSLog(@"tableData1:%@",tableData1);
+    listURLs1 = imageUrl1;
+    NSLog(@"listURLs1:%@",listURLs1);
+    //NSLog(@"listLabels:%@",listLabels);
+    
+//    for(int j=0;j<[keys count];j++)
+//    {
+//        for(int k=0;k<[[imageUrl1 objectAtIndex:j] count];k++)
+//        {
+//            ImageRecord *objs = [[ImageRecord alloc] init];
+//            objs.imageURL = [[imageUrl1 objectAtIndex:j]objectAtIndex:k];
+//            NSLog(@"objs.imageURL:%@",objs.imageURL);
+//            [listURLs1 addObject:objs.imageURL];
+//            //NSLog(@"i:%@i");
+//        }
+//    }
+    
+    //NSLog(@"m:%@",m);
+    //NSLog(@"listURLs1:%@",listURLs1);
+    /*
     tableData = [json valueForKey:keys[0]];
     //NSLog(@"tableData:%@",tableData);
     imageUrl=[tableData valueForKey:@"image"];
-    NSLog(@"imageUrl:%@",imageUrl);
+    //NSLog(@"imageUrl:%@",imageUrl);
     
     for (int cnt=0; cnt<[imageUrl count]; cnt++)
     {
@@ -67,15 +105,15 @@ NSArray *keys;
         //NSLog(@"objs:%@",objs.imageURL);
         [listURLs addObject:objs];
     }
-    NSLog(@"listURLs:%@",listURLs);
-    
+    //NSLog(@"listURLs:%@",listURLs);
+    */
 }
 
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:YES];
     [self.navigationController setNavigationBarHidden:NO];
-    self.title = [NSString stringWithFormat:@"Lazy Loading UICollectionView - %lu Images",(unsigned long)listURLs.count];
+    self.title = [NSString stringWithFormat:@"Lazy Loading UICollectionView - %lu Images",(unsigned long)listURLs1.count];
     [self emptyDocumentsDir];
 }
 
@@ -91,29 +129,20 @@ NSArray *keys;
 
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView*)collectionView
 {
-    return 1;
+    return [keys count];
 }
 
 -(NSInteger)collectionView:(UICollectionView*)collectionView numberOfItemsInSection:(NSInteger)section
 {
     NSInteger sectionItems = 0;
     
-//    for(int i=0;i<[keys count];i++)
-//    {
-//        if(section==i)
-//        {
-//            sectionItems = [[urlLists objectAtIndex:1] length];
-//            //NSLog(@"sec:%lu",(unsigned long)urlLists.count);
-//        }
-//    }
-    
     for(int i=0;i<[keys count];i++)
     {
         if(section==i)
         {
-            sectionItems =  [listURLs count];
+            sectionItems =  [[listURLs1 objectAtIndex:i] count];
         }
-        NSLog(@"sctionItems:%ld",(long)sectionItems);
+        //NSLog(@"sctionItems:%ld",(long)sectionItems);
     }
     
     return sectionItems;
@@ -140,9 +169,28 @@ NSArray *keys;
     
     static NSString *CellIdentifier = @"cell";
     CustomCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
-    //NSLog(@"[keys count]:%lu",(unsigned long)[keys count]);
     
-    for(int i=0;i<[listURLs count];i++)
+    //NSLog(@"[listLabels count]:%ld",[listLabels count]);
+    
+    for(int u=0;u<[listLabels count];u++)
+    {
+        if(indexPath.section==u)
+        {
+            //NSLog(@"[listLabels count]0:%ld",[[listLabels objectAtIndex:0] count]);
+            for(int i=0;i<[[listLabels objectAtIndex:u] count];i++)
+            {
+                if(indexPath.item==i)
+                {
+                    //NSLog(@"[listLabels]:%@",[[listLabels objectAtIndex:0]objectAtIndex:i]);
+                    cell.cellLabel.text = [[listLabels objectAtIndex:u]objectAtIndex:i];
+                }
+            }
+        }
+    }
+    
+    //NSLog(@"[[listURLs1 objectAtIndex:0] count]:%lu",(unsigned long)[[listURLs1 objectAtIndex:0] count]);
+    /*
+    for(int i=0;i<[[listURLs1 objectAtIndex:0] count];i++)
     {
         if(indexPath.section==i)
         {
@@ -150,7 +198,9 @@ NSArray *keys;
             
             // Set up the cell...
             // Fetch a image record from the array
-            ImageRecord *imgRecord = [listURLs objectAtIndex:indexPath.row];
+            //ImageRecord *imgRecord = [listURLs objectAtIndex:indexPath.row];
+            NSLog(@"imgggg:%@",[[listURLs1 objectAtIndex:0] objectAtIndex:indexPath.row]);
+            ImageRecord *imgRecord=[[listURLs1 objectAtIndex:0] objectAtIndex:indexPath.row];
             //NSLog(@"imgRecord:%@",imgRecord);
             // Set thumbimage
             // Check if the image exists in cache. If it does exists in cache, directly fetch it and display it in the cell
@@ -207,6 +257,7 @@ NSArray *keys;
 
         }
     }
+    */
     
     return cell;
 }
