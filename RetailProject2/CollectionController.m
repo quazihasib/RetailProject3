@@ -13,7 +13,7 @@
 #import "ImageCache.h"
 
 static NSString * const kCellReuseIdentifier = @"cell";
-NSMutableArray *listURLs, *listLabels, *listURLs1 ;
+NSMutableArray *listURLs, *listLabels, *listURLs1, *listImages ;
 
 @implementation CollectionController : UIViewController
 
@@ -60,6 +60,7 @@ NSArray *keys;
     imageUrl1 = [[NSMutableArray alloc]init];
     listURLs1 = [[NSMutableArray alloc] init];
     listLabels = [[NSMutableArray alloc]init];
+    listImages = [[NSMutableArray alloc]init];
     
     for(int y=0;y<[keys count]; y++)
     {
@@ -77,6 +78,20 @@ NSArray *keys;
     listURLs1 = imageUrl1;
     NSLog(@"listURLs1:%@",listURLs1);
     //NSLog(@"listLabels:%@",listLabels);
+    
+    /*
+    for(int i=0;i<[listURLs1 count];i++)
+    {
+        for(int j=0;j<[listURLs1[i] count];j++)
+        {
+            NSLog(@"i:%d,j:%d, aaa:%@",i,j,[[listURLs1 objectAtIndex:i]objectAtIndex:j]);
+            ImageRecord *objs = [[ImageRecord alloc] init];
+            objs.imageURL = [[listURLs1 objectAtIndex:i]objectAtIndex:j];
+            //NSLog(@"hh:%@",objs.imageURL);
+            [[listImages ins]]
+        }
+    }
+    */
     
 //    for(int j=0;j<[keys count];j++)
 //    {
@@ -183,6 +198,61 @@ NSArray *keys;
                 {
                     //NSLog(@"[listLabels]:%@",[[listLabels objectAtIndex:0]objectAtIndex:i]);
                     cell.cellLabel.text = [[listLabels objectAtIndex:u]objectAtIndex:i];
+                    
+                    
+                    UIActivityIndicatorView *activityIndicator = (UIActivityIndicatorView *)[cell.cellImage viewWithTag:505];
+                    
+                    if ([[ImageCache sharedImageCache] DoesExist:[[listURLs1 objectAtIndex:u]objectAtIndex:i]] == true){
+                        [activityIndicator stopAnimating];
+                        [activityIndicator removeFromSuperview];
+                        
+                        cell.cellImage.image = [[ImageCache sharedImageCache] GetImage:[[listURLs1 objectAtIndex:u]objectAtIndex:i]];
+                    }
+                    else{
+                        // Add activity indicator
+                        if (activityIndicator) [activityIndicator removeFromSuperview];
+                        activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+                        activityIndicator.hidesWhenStopped = YES;
+                        activityIndicator.hidden = NO;
+                        [activityIndicator startAnimating];
+                        activityIndicator.center = cell.cellImage.center;
+                        activityIndicator.tag = 505;
+                        [cell.cellImage addSubview:activityIndicator];
+                        
+                     
+                        // Only load cached images; defer new downloads until scrolling ends
+                        //if (!imgRecord.thumbImage){
+                            //if (self.collection.dragging == NO && self.collection.decelerating == NO){
+                            //[self startIconDownload:imgRecord forIndexPath:indexPath];
+                            
+                            NSURL *URL = [NSURL URLWithString:[[listURLs1 objectAtIndex:u]objectAtIndex:i]];
+                            NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+                            
+                            NSURLSession *session = [NSURLSession sharedSession];
+                            NSURLSessionDataTask *task = [session dataTaskWithRequest:request
+                                                                    completionHandler:
+                                                          ^(NSData *data, NSURLResponse *response, NSError *error) {
+                                                              dispatch_async(dispatch_get_main_queue(), ^{
+                                                                  
+                                                                  [activityIndicator stopAnimating];
+                                                                  [activityIndicator removeFromSuperview];
+                                                                  
+                                                                  cell.cellImage.image = [UIImage imageWithData:data];
+                                                                  
+                                                                  //cell.cellLabel.text = [listLabels objectAtIndex:indexPath.item];
+                                                              });
+                                                          }];
+                            
+                            [task resume];
+                            //}
+                            // if a download is deferred or in progress, return a placeholder image
+                            cell.cellImage.image = [UIImage imageNamed:@"placeholder.png"];
+//                        }
+//                        else{
+//                            cell.cellImage.image = [[listURLs1 objectAtIndex:u]objectAtIndex:i];
+//                        }
+
+                    }
                 }
             }
         }
