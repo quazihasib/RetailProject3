@@ -33,23 +33,6 @@ NSArray *keys;
     NSDictionary *json = [self getDictonary:@"json"];
     //NSLog(@"json:%@",json);
     
-//    NSMutableArray *tableLists = [NSMutableArray array];
-//    NSMutableArray *imageLists = [NSMutableArray array];
-//       
-//   
-//    for(int i=0;i<[keys count];i++)
-//    {
-//        //NSLog(@"keys:%@",keys[i]);
-//        tableLists[i] = [json valueForKey:keys[i]];
-//        imageLists[i] = [tableLists[i] valueForKey:@"image"];
-//        
-//        for (int j=0; j<[imageLists[i] count]; j++)
-//        {
-//            ImageRecord *objs = [[ImageRecord alloc] init];
-//            objs.imageURL = [imageLists[i] objectAtIndex:j];
-//        }
-//        //NSLog(@"urlLists:%@",urlLists);
-//    }
 
     listURLs = [NSMutableArray array];
     NSMutableArray *tableData,* imageUrl, *tableData1,*imageUrl1;
@@ -66,6 +49,12 @@ NSArray *keys;
     {
         [tableData1 insertObject:[json valueForKey:keys[y]] atIndex:y];
     }
+    NSLog(@"tableData1:%@",tableData1);
+    //reverse the keys array
+    NSArray *tableReverse = [[NSArray alloc]init];
+    tableReverse = [[tableData1 reverseObjectEnumerator] allObjects];
+    NSLog(@"tableReverse:%@",tableReverse);
+    tableData1 = [tableReverse mutableCopy];
     
     for(int u=0;u<[keys count]; u++)
     {
@@ -73,55 +62,9 @@ NSArray *keys;
         [listLabels insertObject:[[tableData1 objectAtIndex:u] valueForKey:@"field1"] atIndex:u];
     }
     
-    
-    //NSLog(@"tableData1:%@",tableData1);
     listURLs1 = imageUrl1;
-    NSLog(@"listURLs1:%@",listURLs1);
-    //NSLog(@"listLabels:%@",listLabels);
-    
-    /*
-    for(int i=0;i<[listURLs1 count];i++)
-    {
-        for(int j=0;j<[listURLs1[i] count];j++)
-        {
-            NSLog(@"i:%d,j:%d, aaa:%@",i,j,[[listURLs1 objectAtIndex:i]objectAtIndex:j]);
-            ImageRecord *objs = [[ImageRecord alloc] init];
-            objs.imageURL = [[listURLs1 objectAtIndex:i]objectAtIndex:j];
-            //NSLog(@"hh:%@",objs.imageURL);
-            [[listImages ins]]
-        }
-    }
-    */
-    
-//    for(int j=0;j<[keys count];j++)
-//    {
-//        for(int k=0;k<[[imageUrl1 objectAtIndex:j] count];k++)
-//        {
-//            ImageRecord *objs = [[ImageRecord alloc] init];
-//            objs.imageURL = [[imageUrl1 objectAtIndex:j]objectAtIndex:k];
-//            NSLog(@"objs.imageURL:%@",objs.imageURL);
-//            [listURLs1 addObject:objs.imageURL];
-//            //NSLog(@"i:%@i");
-//        }
-//    }
-    
-    //NSLog(@"m:%@",m);
     //NSLog(@"listURLs1:%@",listURLs1);
-    /*
-    tableData = [json valueForKey:keys[0]];
-    //NSLog(@"tableData:%@",tableData);
-    imageUrl=[tableData valueForKey:@"image"];
-    //NSLog(@"imageUrl:%@",imageUrl);
-    
-    for (int cnt=0; cnt<[imageUrl count]; cnt++)
-    {
-        ImageRecord *objs = [[ImageRecord alloc] init];
-        objs.imageURL = [imageUrl objectAtIndex:cnt];
-        //NSLog(@"objs:%@",objs.imageURL);
-        [listURLs addObject:objs];
-    }
-    //NSLog(@"listURLs:%@",listURLs);
-    */
+    //NSLog(@"listLabels:%@",listLabels);
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -167,15 +110,19 @@ NSArray *keys;
 {
     CustomHeader *header = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"header" forIndexPath:indexPath];
     
-    if (indexPath.section ==0) {
-        header.collectionHeader.text = [NSString stringWithFormat:@"Section 0"];
+    //reverse the keys array
+    NSArray *keysReverse = [[NSArray alloc]init];
+    keysReverse = [[keys reverseObjectEnumerator] allObjects];
+    //NSLog(@"a:%@",keysReverse);
+    
+    for(int i=0;i<[keysReverse count];i++)
+    {
+        if(indexPath.section==i)
+        {
+            header.collectionHeader.text = [keysReverse objectAtIndex:i];
+        }
     }
-    else if (indexPath.section ==1) {
-        header.collectionHeader.text = [NSString stringWithFormat:@"Section 1"];
-    }
-    else if (indexPath.section ==2) {
-        header.collectionHeader.text = [NSString stringWithFormat:@"Section 2"];
-    }
+    
     return header;
 }
 
@@ -184,8 +131,6 @@ NSArray *keys;
     
     static NSString *CellIdentifier = @"cell";
     CustomCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
-    
-    //NSLog(@"[listLabels count]:%ld",[listLabels count]);
     
     for(int u=0;u<[listLabels count];u++)
     {
@@ -257,77 +202,6 @@ NSArray *keys;
             }
         }
     }
-    
-    //NSLog(@"[[listURLs1 objectAtIndex:0] count]:%lu",(unsigned long)[[listURLs1 objectAtIndex:0] count]);
-    /*
-    for(int i=0;i<[[listURLs1 objectAtIndex:0] count];i++)
-    {
-        if(indexPath.section==i)
-        {
-            UIActivityIndicatorView *activityIndicator = (UIActivityIndicatorView *)[cell.cellImage viewWithTag:505];
-            
-            // Set up the cell...
-            // Fetch a image record from the array
-            //ImageRecord *imgRecord = [listURLs objectAtIndex:indexPath.row];
-            NSLog(@"imgggg:%@",[[listURLs1 objectAtIndex:0] objectAtIndex:indexPath.row]);
-            ImageRecord *imgRecord=[[listURLs1 objectAtIndex:0] objectAtIndex:indexPath.row];
-            //NSLog(@"imgRecord:%@",imgRecord);
-            // Set thumbimage
-            // Check if the image exists in cache. If it does exists in cache, directly fetch it and display it in the cell
-            if ([[ImageCache sharedImageCache] DoesExist:imgRecord.imageURL] == true){
-                [activityIndicator stopAnimating];
-                [activityIndicator removeFromSuperview];
-                
-                cell.cellImage.image = [[ImageCache sharedImageCache] GetImage:imgRecord.imageURL];
-            }
-            else{
-                // Add activity indicator
-                if (activityIndicator) [activityIndicator removeFromSuperview];
-                activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-                activityIndicator.hidesWhenStopped = YES;
-                activityIndicator.hidden = NO;
-                [activityIndicator startAnimating];
-                activityIndicator.center = cell.cellImage.center;
-                activityIndicator.tag = 505;
-                [cell.cellImage addSubview:activityIndicator];
-                
-                
-                // Only load cached images; defer new downloads until scrolling ends
-                if (!imgRecord.thumbImage){
-                    //if (self.collection.dragging == NO && self.collection.decelerating == NO){
-                    //[self startIconDownload:imgRecord forIndexPath:indexPath];
-                    
-                    NSURL *URL = [NSURL URLWithString:imgRecord.imageURL];
-                    NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-                    
-                    NSURLSession *session = [NSURLSession sharedSession];
-                    NSURLSessionDataTask *task = [session dataTaskWithRequest:request
-                                                            completionHandler:
-                                                  ^(NSData *data, NSURLResponse *response, NSError *error) {
-                                                      dispatch_async(dispatch_get_main_queue(), ^{
-                                                          
-                                                          [activityIndicator stopAnimating];
-                                                          [activityIndicator removeFromSuperview];
-                                                          
-                                                          cell.cellImage.image = [UIImage imageWithData:data];
-                                                          
-                                                          cell.cellLabel.text = [listLabels objectAtIndex:indexPath.item];
-                                                      });
-                                                  }];
-                    
-                    [task resume];
-                    //}
-                    // if a download is deferred or in progress, return a placeholder image
-                    cell.cellImage.image = [UIImage imageNamed:@"placeholder.png"];
-                }
-                else{
-                    cell.cellImage.image = imgRecord.thumbImage;
-                }
-            }
-
-        }
-    }
-    */
     
     return cell;
 }
